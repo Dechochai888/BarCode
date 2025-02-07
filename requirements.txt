@@ -2,5 +2,4 @@ flask
 python-barcode
 pillow
 gunicorn
-Flask==2.1.1
 flask_sqlalchemy
