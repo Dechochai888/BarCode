@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Scanner</title>
+    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+</head>
+<body>
+    <h1>Scan Barcode</h1>
+    <video id="scanner" width="100%" height="100%" style="border: 1px solid black;"></video>
+    <h3>Barcode: <span id="barcode-result"></span></h3>
+
+    <script>
+        // เริ่มต้นการเปิดกล้องและแสดงภาพ
+        function startScanner() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                    .then(function(stream) {
+                        const videoElement = document.getElementById('scanner');
+                        videoElement.srcObject = stream;
+                        videoElement.setAttribute('playsinline', true);
+                        videoElement.play();
+
+                        // เริ่มใช้งาน QuaggaJS เพื่อสแกนบาร์โค้ด
+                        Quagga.init({
+                            inputStream: {
+                                name: "Live",
+                                type: "LiveStream",
+                                target: videoElement, // เอาภาพจากกล้องมือถือ
+                            },
+                            decoder: {
+                                readers: ["ean_reader", "upc_reader", "code_128_reader"] // รองรับหลายประเภทบาร์โค้ด
+                            }
+                        }, function(err) {
+                            if (err) {
+                                console.error(err);
+                                return;
+                            }
+                            Quagga.start();
+                        });
+
+                        // ค้นหาบาร์โค้ด
+                        Quagga.onDetected(function(result) {
+                            document.getElementById('barcode-result').innerText = result.codeResult.code;
+                        });
+                    })
+                    .catch(function(err) {
+                        console.error("Error accessing the camera: ", err);
+                    });
+            } else {
+                alert("Your device does not support camera access.");
+            }
+        }
+
+        // เรียกใช้ฟังก์ชันเมื่อโหลดหน้า
+        window.onload = startScanner;
+    </script>
+</body>
+</html>
